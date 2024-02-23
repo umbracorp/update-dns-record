@@ -1,0 +1,27 @@
+[project]
+name = "update-dns-record"
+version = "0.1.0"
+description = "Update a provider DNS record"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE.txt" }
+keywords = ["dns", "record"]
+authors = [{ email = "stevengillies@outlook.com" }, { name = "Steven Gillies" }]
+maintainers = [
+    { email = "stevengillies@outlook.com" },
+    { name = "Steven Gillies" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+]
+
+dependencies = []
+
+[project.optional-dependencies]
+
+[project.urls]
+homepage = "https://example.com"
+documentation = "https://readthedocs.org"
+repository = "https://github.com"
+changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"
