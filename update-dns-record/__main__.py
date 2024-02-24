@@ -6,7 +6,7 @@ from typing import Literal, Optional
 import click
 import requests
 
-from . import DNSProvider, DNSRecord
+from . import DNSProvider
 from .cloudflare import CloudFlare
 
 ProviderName = Literal["cloudflare"]

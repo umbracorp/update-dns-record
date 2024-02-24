@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 import requests
 
@@ -12,14 +11,14 @@ class CloudFlare(DNSProvider):
         self.api_key = api_key
 
     def get_record(
-        self, zone_name: str, record_name: str, record_type: Optional[str] = "A"
+        self, zone_name: str, record_name: str, record_type: str = "A"
     ) -> DNSRecord:
         zone_id = self._get_zone_id(zone_name=zone_name)
         return self._get_record(
             zone_id=zone_id, record_name=record_name, record_type=record_type
         )
 
-    def update_record_content(self, record: DNSRecord, content=str) -> DNSRecord:
+    def update_record_content(self, record: DNSRecord, content: str) -> DNSRecord:
         r = requests.patch(
             self.base_url + f"/zones/{record.zone_id}/dns_records/{record.id}",
             json={"content": content},
@@ -77,7 +76,7 @@ class CloudFlare(DNSProvider):
         return data["result"][0]["id"]
 
     def _get_record(
-        self, zone_id: str, record_name: str, record_type: Optional[str] = "A"
+        self, zone_id: str, record_name: str, record_type: str = "A"
     ) -> str:
         r = requests.get(
             self.base_url + f"/zones/{zone_id}/dns_records",
