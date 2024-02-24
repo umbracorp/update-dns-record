@@ -4,3 +4,4 @@
 
 - Created CLI interface
 - Added CloudFlare provider
+- Added Dockerfile
