@@ -9,3 +9,9 @@ python -m venv .venv
 . .venv/bin/activate
 pip install .
 ```
+
+## Usage
+
+```bash
+python -m update-dns-record --help
+```
