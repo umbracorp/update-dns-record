@@ -1,6 +1,6 @@
 *.env
 !example.env
-*.log
+*.log*
 
 __pycache__/
 .venv/

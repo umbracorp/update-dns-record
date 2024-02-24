@@ -2,7 +2,14 @@ import logging
 
 import requests
 
-from . import DNSProvider, DNSRecord
+from . import (
+    DNSProvider,
+    DNSRecord,
+    RecordNotFound,
+    TooManyRecordsFound,
+    TooManyZonesFound,
+    ZoneNotFound,
+)
 
 
 class CloudFlare(DNSProvider):
@@ -18,6 +25,17 @@ class CloudFlare(DNSProvider):
             zone_id=zone_id, record_name=record_name, record_type=record_type
         )
 
+    def create_record(
+        self, zone_name: str, record_name: str, content: str, record_type: str = "A"
+    ) -> DNSRecord:
+        zone_id = self._get_zone_id(zone_name=zone_name)
+        return self._create_record(
+            zone_id=zone_id,
+            record_name=record_name,
+            content=content,
+            record_type=record_type,
+        )
+
     def update_record_content(self, record: DNSRecord, content: str) -> DNSRecord:
         r = requests.patch(
             self.base_url + f"/zones/{record.zone_id}/dns_records/{record.id}",
@@ -27,6 +45,7 @@ class CloudFlare(DNSProvider):
                 "Authorization": f"Bearer {self.api_key}",
             },
         )
+
         try:
             r.raise_for_status()
         except Exception as exc:
@@ -52,6 +71,7 @@ class CloudFlare(DNSProvider):
                 "Authorization": f"Bearer {self.api_key}",
             },
         )
+
         try:
             r.raise_for_status()
         except Exception as exc:
@@ -62,12 +82,12 @@ class CloudFlare(DNSProvider):
 
         number_of_zones = len(data["result"])
         if number_of_zones == 0:
-            exc = Exception(f"Zone '{zone_name}' not found.")
+            exc = ZoneNotFound(f"Zone '{zone_name}' not found.")
             logging.error(exc)
             raise exc
 
         if number_of_zones > 1:
-            exc = Exception(
+            exc = TooManyZonesFound(
                 f"Too many zones ({number_of_zones}) found for zone name '{zone_name}'"
             )
             logging.error(exc)
@@ -86,6 +106,7 @@ class CloudFlare(DNSProvider):
                 "Authorization": f"Bearer {self.api_key}",
             },
         )
+
         try:
             r.raise_for_status()
         except Exception as exc:
@@ -96,14 +117,14 @@ class CloudFlare(DNSProvider):
 
         number_of_records = len(data["result"])
         if number_of_records == 0:
-            exc = Exception(
+            exc = RecordNotFound(
                 f"Record '{record_name}' of type '{record_type}' not found."
             )
             logging.error(exc)
             raise exc
 
         if number_of_records > 1:
-            exc = Exception(
+            exc = TooManyRecordsFound(
                 (
                     f"Too many records ({number_of_records}) found for record name "
                     f"'{record_name}' of type '{record_type}'"
@@ -113,6 +134,40 @@ class CloudFlare(DNSProvider):
             raise exc
 
         record_data = data["result"][0]
+        return DNSRecord(
+            id=record_data["id"],
+            name=record_data["name"],
+            content=record_data["content"],
+            type=record_data["type"],
+            zone_id=record_data["zone_id"],
+            zone_name=record_data["zone_name"],
+        )
+
+    def _create_record(
+        self,
+        zone_id: str,
+        record_name: str,
+        content: str,
+        record_type: str = "A",
+    ) -> DNSRecord:
+        r = requests.post(
+            self.base_url + f"/zones/{zone_id}/dns_records",
+            json={"content": content, "name": record_name, "type": record_type},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+            },
+        )
+
+        try:
+            r.raise_for_status()
+        except Exception as exc:
+            logging.error(exc)
+            raise
+
+        data = r.json()
+
+        record_data = data["result"]
         return DNSRecord(
             id=record_data["id"],
             name=record_data["name"],

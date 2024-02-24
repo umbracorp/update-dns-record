@@ -6,7 +6,7 @@ from typing import Literal, Optional
 import click
 import requests
 
-from . import DNSProvider
+from . import DNSProvider, RecordNotFound
 from .cloudflare import CloudFlare
 
 ProviderName = Literal["cloudflare"]
@@ -43,7 +43,16 @@ logging.basicConfig(
     "--record-type",
     type=str,
     default="A",
-    help="The DNS record type. Defaults to 'A'",
+    show_default=True,
+    help="The DNS record type.",
+)
+@click.option(
+    "--create",
+    type=bool,
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="If record does not exist, create it. Default is False.",
 )
 def main(
     provider_name: ProviderName,
@@ -51,6 +60,7 @@ def main(
     record_name: str,
     record_type: str = "A",
     ip: Optional[str] = None,
+    create: bool = False,
 ):
     """
     Update a DNS record in a remote provider.
@@ -68,18 +78,41 @@ def main(
     logging.info(
         f"Validating DNS record name '{record_name}' in zone name '{zone_name}'..."
     )
-    record = provider.get_record(
-        zone_name=zone_name, record_name=record_name, record_type=record_type
-    )
+    try:
+        record = provider.get_record(
+            zone_name=zone_name, record_name=record_name, record_type=record_type
+        )
+    except RecordNotFound:
+        logging.warning(f"Record '{record_name}' not found in zone '{zone_name}'")
+        if create:
+            record_found = False
+        else:
+            raise
+    else:
+        record_found = True
 
     ip = ip or get_public_ip()
-    logging.info(f"Comparing record content ({record.content}) to requested IP '{ip}'")
-    if record.content == ip:
-        logging.info("Record content is already up-to-date.")
+
+    if record_found:
+        logging.info(
+            f"Comparing record content ({record.content}) to requested IP '{ip}'"
+        )
+        if record.content == ip:
+            logging.info("Record content is already up-to-date.")
+        else:
+            logging.info("Updating record content...")
+            updated_record = provider.update_record_content(record=record, content=ip)
     else:
-        logging.info("Updating record content...")
-        updated_record = provider.update_record_content(record=record, content=ip)
-        logging.info(f"Record content updated to '{updated_record.content}'")
+        logging.info(f"Creating record '{record_name}' in zone '{zone_name}'...")
+        updated_record = provider.create_record(
+            zone_name=zone_name,
+            record_name=record_name,
+            content=ip,
+        )
+
+    logging.info(
+        f"Record '{record_name}' content updated to '{updated_record.content}'"
+    )
 
 
 def get_public_ip() -> str:

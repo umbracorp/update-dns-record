@@ -20,5 +20,27 @@ class DNSProvider(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    def create_record(
+        self, zone_name: str, record_name: str, content: str, record_type: str = "A"
+    ) -> DNSRecord:
+        raise NotImplementedError()
+
+    @abstractmethod
     def update_record_content(self, record: DNSRecord, content: str) -> DNSRecord:
         raise NotImplementedError()
+
+
+class RecordNotFound(Exception):
+    pass
+
+
+class TooManyRecordsFound(Exception):
+    pass
+
+
+class ZoneNotFound(Exception):
+    pass
+
+
+class TooManyZonesFound(Exception):
+    pass
