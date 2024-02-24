@@ -19,7 +19,8 @@ python -m update-dns-record --help
 ### Environment Variables
 
 ```env
-API_KEY=abcdefghijk0123456789  # The API token for DNS provider auth
+API_KEY=abcdefghijk0123456789   # The API token for DNS provider auth
+LOG_DIR=./logs                  # Directory to output logs to
 ```
 
 ## Docker

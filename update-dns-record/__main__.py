@@ -1,6 +1,7 @@
 import logging
 import logging.handlers
 from os import environ
+from pathlib import Path
 from typing import Literal, Optional
 
 import click
@@ -12,6 +13,11 @@ from .cloudflare import CloudFlare
 ProviderName = Literal["cloudflare"]
 
 API_KEY = environ.get("API_KEY", default=None)
+LOG_DIR = environ.get("LOG_DIR", default="./logs")
+LOG_LENGTH_DAYS = int(environ.get("LOG_LENGTH_DAYS", default="7"))
+
+log_path = Path(LOG_DIR)
+log_path.mkdir(parents=True, exist_ok=True)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,9 +27,9 @@ logging.basicConfig(
     handlers=[
         logging.StreamHandler(),
         logging.handlers.TimedRotatingFileHandler(
-            filename="update-dns-record.log",
+            filename=log_path.joinpath("update-dns-record.log"),
             encoding="utf-8",
-            backupCount=7,
+            backupCount=LOG_LENGTH_DAYS,
             utc=True,
         ),
     ],
@@ -99,6 +105,7 @@ def main(
         )
         if record.content == ip:
             logging.info("Record content is already up-to-date.")
+            return
         else:
             logging.info("Updating record content...")
             updated_record = provider.update_record_content(record=record, content=ip)
