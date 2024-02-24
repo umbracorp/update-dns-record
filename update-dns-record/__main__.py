@@ -68,7 +68,7 @@ def main(
     logging.info(
         f"Validating DNS record name '{record_name}' in zone name '{zone_name}'..."
     )
-    record: DNSRecord = provider.get_record(
+    record = provider.get_record(
         zone_name=zone_name, record_name=record_name, record_type=record_type
     )
 
@@ -78,6 +78,8 @@ def main(
         logging.info("Record content is already up-to-date.")
     else:
         logging.info("Updating record content...")
+        updated_record = provider.update_record_content(record=record, content=ip)
+        logging.info(f"Record content updated to '{updated_record.content}'")
 
 
 def get_public_ip() -> str:

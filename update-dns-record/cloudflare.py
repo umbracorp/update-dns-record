@@ -20,7 +20,29 @@ class CloudFlare(DNSProvider):
         )
 
     def update_record_content(self, record: DNSRecord, content=str) -> DNSRecord:
-        pass
+        r = requests.patch(
+            self.base_url + f"/zones/{record.zone_id}/dns_records/{record.id}",
+            json={"content": content},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+            },
+        )
+        try:
+            r.raise_for_status()
+        except Exception as exc:
+            logging.error(exc)
+            raise
+
+        record_data = r.json()["result"]
+        return DNSRecord(
+            id=record_data["id"],
+            name=record_data["name"],
+            content=record_data["content"],
+            type=record_data["type"],
+            zone_id=record_data["zone_id"],
+            zone_name=record_data["zone_name"],
+        )
 
     def _get_zone_id(self, zone_name: str) -> str:
         r = requests.get(
