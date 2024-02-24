@@ -15,3 +15,23 @@ pip install .
 ```bash
 python -m update-dns-record --help
 ```
+
+### Environment Variables
+
+```env
+API_KEY=abcdefghijk0123456789  # The API token for DNS provider auth
+```
+
+## Docker
+
+### Build
+
+```bash
+docker build -t update-dns-record .
+```
+
+### Run
+
+```bash
+docker run --rm --env-file .env update-dns-record --help
+```
