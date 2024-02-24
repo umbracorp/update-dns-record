@@ -16,12 +16,12 @@ classifiers = [
     "Programming Language :: Python",
 ]
 
-dependencies = []
+dependencies = ["click~=8.1.7", "requests~=2.31.0"]
 
 [project.optional-dependencies]
+dev = ["black~=24.2.0", "pip-tools~=7.4.0"]
 
 [project.urls]
-homepage = "https://example.com"
-documentation = "https://readthedocs.org"
-repository = "https://github.com"
+documentation = "https://github.com/umbracorp/update-dns-record/README.md"
+repository = "https://github.com/umbracorp/update-dns-record"
 changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"

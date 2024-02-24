@@ -1,5 +1,8 @@
 *.env
 !example.env
+*.log
 
 __pycache__/
 .venv/
+*.egg-info/
+build/
